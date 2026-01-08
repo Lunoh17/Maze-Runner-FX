@@ -60,13 +60,12 @@ public class CompararDatos extends RegistroArchivo{
      * @return true si ya está registrado, false en caso contrario
      */
     public boolean EnviarDatosRegistro(){
-        String AuxUsuario = usuario.getCorreo();
-        String AuxContrasenia = contrasenia.getContrasenia();
-        if(this.BuscarArchivoRegistro(AuxUsuario)){
-            return true;
-        }else{
+        if (this.usuario == null || this.usuario.getCorreo() == null) {
             return false;
         }
+        String AuxUsuario = usuario.getCorreo();
+        // No acceder a contrasenia aquí: la verificación de registro solo necesita el usuario
+        return this.BuscarArchivoRegistro(AuxUsuario);
     }
     /**
      * Valida las credenciales del usuario contra el archivo de sesiones.
