@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ve.edu.ucab.mazerunnerfx.EleccionLaberintoController">
+   <children>
+      <ImageView fitHeight="504.0" fitWidth="678.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../../misc/seleccionIMG.png" />
+         </image>
+      </ImageView>
+      <AnchorPane layoutX="79.0" layoutY="37.0" prefHeight="327.0" prefWidth="509.0">
+         <children>
+            <ImageView fitHeight="327.0" fitWidth="509.0" opacity="0.67" pickOnBounds="true">
+               <image>
+                  <Image url="@../../../../misc/whiteBlock.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="85.0" layoutY="59.0" text="Seleccione la dificultad">
+               <font>
+                  <Font name="Comic Sans MS Bold" size="30.0" />
+               </font>
+            </Label>
+            <Button fx:id="facil" layoutX="112.0" layoutY="129.0" mnemonicParsing="false" onAction="#onFacil" prefHeight="35.0" prefWidth="100.0" text="Fácil">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="intermedio" layoutX="112.0" layoutY="196.0" mnemonicParsing="false" onAction="#onIntermedio" text="Intermedio">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="dificil" layoutX="305.0" layoutY="129.0" mnemonicParsing="false" onAction="#onDificil" prefHeight="35.0" prefWidth="100.0" text="Difícil">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="avanzado" layoutX="305.0" layoutY="196.0" mnemonicParsing="false" onAction="#onAvanzado" prefHeight="35.0" prefWidth="100.0" text="Avanzado">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="regresar" layoutX="213.0" layoutY="254.0" mnemonicParsing="false" onAction="#onRegresar" text="Regresar">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ve.edu.ucab.mazerunnerfx.LaberintoController"
+            prefHeight="360.0" prefWidth="600.0">
+
+    <top>
+        <HBox spacing="12" BorderPane.alignment="CENTER" style="-fx-padding:8; -fx-alignment:center-left;">
+            <children>
+                <Label fx:id="scoreLabel" text="Puntos: 0" />
+                <Label fx:id="timeLabel" text="Tiempo: 00:00" />
+                <Label fx:id="livesLabel" text="Vidas: 3" />
+                <Label fx:id="healthLabel" text="Energia: 10/10" />
+            </children>
+        </HBox>
+    </top>
+
+    <center>
+        <Canvas fx:id="mazeCanvas" width="560.0" height="300.0" focusTraversable="true" />
+    </center>
+
+</BorderPane>

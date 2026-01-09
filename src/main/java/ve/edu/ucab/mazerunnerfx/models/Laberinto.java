@@ -11,13 +11,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Vector;
+import java.util.function.Consumer;
 
 /**
  * Representa el laberinto, su generación, visualización y lógica de juego.
  * Administra celdas, entidades y carga/guardado desde archivos JSON.
  */
 public class Laberinto {
-    private static final int MAX_DIM = 50;
+    // Allow larger mazes so difficulty ranges up to 75x75 are valid
+    private static final int MAX_DIM = 100;
     private static final int MIN_DIM = 1;
     private final int x;
     private final int y;
@@ -25,6 +27,13 @@ public class Laberinto {
     private final Vector<Entidad> entidades = new Vector<>();
     // almacenar el jugador para que persista y se use para iniciar el bucle de entrada
     public Jugador jugador;
+
+    // Listener hook for UI to receive the textual representation when display() is called
+    private transient Consumer<String> displayListener = null;
+
+    public void setDisplayListener(Consumer<String> listener) {
+        this.displayListener = listener;
+    }
 
     /**
      * Crea un laberinto cuadrado de tamaño dado (clamp entre 1 y 50).
@@ -66,7 +75,8 @@ public class Laberinto {
                 maze[i][j] = new Celda();
             }
         }
-        generateMaze(0, 0);
+        // Start generation from the center to avoid strong corner bias
+        generateMaze(this.x / 2, this.y / 2);
         final int nEntidad = Math.toIntExact(Math.round((double) (this.x * this.y) / 10d)); // 10% de las celdas tendrán peligros
         // Coloca al jugador en la celda de inicio (0,0)
         // Usar el jugador existente si fue inyectado; de lo contrario, usar el predeterminado
@@ -478,81 +488,77 @@ public class Laberinto {
      * Dibuja el laberinto actual en la consola.
      */
     public void display() {
-        Misc.clearScreen();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < y; i++) {
             // crea la pared norte
             for (int j = 0; j < x; j++) {
                 if ((maze[j][i].valor & DIR.N.bit) == 0) {
-                    System.out.print("+---");
+                    sb.append("+---");
                 } else {
-                    System.out.print("+   ");
+                    sb.append("+   ");
                 }
             }
-            System.out.println("+");
+            sb.append("+").append(System.lineSeparator());
             // crea la pared oeste
             for (int j = 0; j < x; j++) {
                 if ((maze[j][i].valor & DIR.W.bit) == 0) {
                     // pared oeste cerrada: imprimir '|', luego un espacio, el carácter de celda y un espacio final => 4 caracteres
-                    System.out.print("| " + maze[j][i].obtenerAscii() + " ");
+                    sb.append("| ").append(maze[j][i].obtenerAscii()).append(" ");
                 } else {
-                    System.out.print("  " + maze[j][i].obtenerAscii() + " ");
+                    sb.append("  ").append(maze[j][i].obtenerAscii()).append(" ");
                 }
             }
-            System.out.println("|");
+            sb.append("|").append(System.lineSeparator());
         }
         // crea la pared sur
         for (int j = 0; j < x; j++) {
-            System.out.print("+---");
+            sb.append("+---");
         }
-        System.out.println("+");
-    }
+        sb.append("+").append(System.lineSeparator());
 
-    /**
-     * Intenta mover una entidad en la dirección indicada si no hay paredes ni límites.
-     * @param entidad entidad a mover
-     * @param direccion dirección de movimiento
-     * @return true si el movimiento se realizó; false en caso contrario
-     */
-    public boolean movimientoEntidad(Entidad entidad, DIR direccion) {
-        int jugadorX = entidad.getPosX();
-        int jugadorY = entidad.getPosY();
-        int destinoX = jugadorX + direccion.direccionX;
-        int destinoY = jugadorY + direccion.direccionY;
-        if (!between(destinoX, x) || !between(destinoY, y)) {
-            return false;
-        }
-
-        if ((maze[jugadorX][jugadorY].valor & direccion.bit) == 0) {
-            return false;
-        }
-
-        maze[jugadorX][jugadorY].removeEntidad(entidad);
-        maze[destinoX][destinoY].addEntidad(entidad);
-        if (entidad instanceof Jugador jugadorMov) {
-            jugadorMov.celdaActual = maze[destinoX][destinoY];
-        }
-        entidad.setPosition(destinoX, destinoY);
-        return true;
-    }
-
-    /**
-     * Genera el laberinto usando backtracking recursivo a partir de una celda inicial.
-     * @param celdaX columna inicial
-     * @param celdaY fila inicial
-     */
-    private void generateMaze(int celdaX, int celdaY) {
-        DIR[] direccion = DIR.values();
-        Collections.shuffle(Arrays.asList(direccion));
-        for (DIR dir : direccion) {
-            int vecinoX = celdaX + dir.direccionX;
-            int vecinoY = celdaY + dir.direccionY;
-            if (between(vecinoX, x) && between(vecinoY, y)
-                    && (maze[vecinoX][vecinoY].valor == 0)) {
-                maze[celdaX][celdaY].valor |= dir.bit;
-                maze[vecinoX][vecinoY].valor |= dir.opposite.bit;
-                generateMaze(vecinoX, vecinoY);
+        String out = sb.toString();
+        // print to console as before
+        Misc.clearScreen();
+        System.out.print(out);
+        // notify UI listener if present
+        if (this.displayListener != null) {
+            try {
+                this.displayListener.accept(out);
+            } catch (Throwable t) {
+                // swallow listener errors to avoid breaking game loop
             }
         }
+    }
+
+    /**
+     * Returns the textual representation of the current maze without printing.
+     * Useful for UI components that want to render the maze.
+     */
+    public String getDisplayString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < y; i++) {
+            for (int j = 0; j < x; j++) {
+                if ((maze[j][i].valor & DIR.N.bit) == 0) {
+                    sb.append("+---");
+                } else {
+                    sb.append("+   ");
+                }
+            }
+            sb.append("+").append(System.lineSeparator());
+            for (int j = 0; j < x; j++) {
+                if ((maze[j][i].valor & DIR.W.bit) == 0) {
+                    sb.append("| ").append(maze[j][i].obtenerAscii()).append(" ");
+                } else {
+                    sb.append("  ").append(maze[j][i].obtenerAscii()).append(" ");
+                }
+            }
+            sb.append("|").append(System.lineSeparator());
+        }
+        for (int j = 0; j < x; j++) {
+            sb.append("+---");
+        }
+        sb.append("+").append(System.lineSeparator());
+        return sb.toString();
     }
 
     public enum DIR {
@@ -566,7 +572,7 @@ public class Laberinto {
             W.opposite = E;
         }
 
-        private final int bit;
+        public final int bit;
         private final int direccionX;
         private final int direccionY;
         private DIR opposite;
@@ -575,6 +581,26 @@ public class Laberinto {
             this.bit = bit;
             this.direccionX = direccionX;
             this.direccionY = direccionY;
+        }
+    }
+
+    // Recursive backtracker maze generation (depth-first search)
+    private void generateMaze(int celdaX, int celdaY) {
+        // create an array of directions and shuffle it to get random traversal order
+        DIR[] direccion = DIR.values();
+        java.util.List<DIR> dirs = java.util.Arrays.asList(direccion);
+        java.util.Collections.shuffle(dirs);
+
+        for (DIR dir : dirs) {
+            int vecinoX = celdaX + dir.direccionX;
+            int vecinoY = celdaY + dir.direccionY;
+            if (between(vecinoX, x) && between(vecinoY, y) && (maze[vecinoX][vecinoY].valor == 0)) {
+                // carve passage between current cell and neighbor
+                maze[celdaX][celdaY].valor |= dir.bit;
+                maze[vecinoX][vecinoY].valor |= dir.opposite.bit;
+                // recurse
+                generateMaze(vecinoX, vecinoY);
+            }
         }
     }
 
@@ -598,5 +624,89 @@ public class Laberinto {
                 maze[0][0].addEntidad(this.jugador);
             }
         }
+    }
+
+    /**
+     * Intenta mover una entidad en la dirección indicada si no hay paredes ni límites.
+     * @param entidad entidad a mover
+     * @param direccion dirección de movimiento
+     * @return true si el movimiento se realizó; false en caso contrario
+     */
+    public boolean movimientoEntidad(Entidad entidad, DIR direccion) {
+        int entidadX = entidad.getPosX();
+        int entidadY = entidad.getPosY();
+        int destinoX = entidadX + direccion.direccionX;
+        int destinoY = entidadY + direccion.direccionY;
+        if (!between(destinoX, x) || !between(destinoY, y)) {
+            return false;
+        }
+
+        // si la pared en la dirección está cerrada, no se puede mover
+        if ((maze[entidadX][entidadY].valor & direccion.bit) == 0) {
+            return false;
+        }
+
+        // realizar el movimiento: quitar de la celda actual y agregar a la destino
+        maze[entidadX][entidadY].removeEntidad(entidad);
+        maze[destinoX][destinoY].addEntidad(entidad);
+
+        // actualizar referencias si es jugador
+        if (entidad instanceof Jugador jugadorMov) {
+            jugadorMov.celdaActual = maze[destinoX][destinoY];
+        }
+
+        entidad.setPosition(destinoX, destinoY);
+        return true;
+    }
+
+    public int getWidth() {
+        return this.x;
+    }
+
+    public int getHeight() {
+        return this.y;
+    }
+
+    /**
+     * Return the internal 'valor' bitmask for the cell at (x,y). Caller must ensure bounds.
+     */
+    public int getCellValue(int cx, int cy) {
+        if (cx < 0 || cy < 0 || cx >= this.x || cy >= this.y) return 0;
+        return maze[cx][cy].valor;
+    }
+
+    /**
+     * Return the representative ASCII char for the cell content (delegates to Celda.obternerAscii).
+     */
+    public char getCellChar(int cx, int cy) {
+        if (cx < 0 || cy < 0 || cx >= this.x || cy >= this.y) return ' ';
+        return maze[cx][cy].obtenerAscii();
+    }
+
+    /**
+     * Advance all entities that implement Movimiento by calling their movimiento(this).
+     * Uses a snapshot to avoid concurrent-modification when entities remove themselves.
+     */
+    public void stepEntities() {
+        Entidad[] snapshot;
+        synchronized (entidades) {
+            snapshot = entidades.toArray(new Entidad[0]);
+        }
+        for (Entidad e : snapshot) {
+            if (e instanceof Movimiento movimientoEntidad) {
+                try {
+                    movimientoEntidad.movimiento(this);
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove an entity from the global entities list (used by UI when a key/crystal is picked).
+     */
+    public void removeEntidadGlobal(Entidad e) {
+        if (e == null) return;
+        entidades.removeElement(e);
     }
 }

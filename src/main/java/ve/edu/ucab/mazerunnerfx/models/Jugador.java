@@ -205,7 +205,7 @@ public class Jugador extends Entidad implements Movimiento {
                 System.out.println("Entrada inválida. Use W/A/S/D para moverse, Q para salir.");
                 continue;
             }
-            movedSuccessfully = laberinto.movimientoEntidad(this, dir);
+            movedSuccessfully = laberinto.movimientoEntidad((Entidad) this, dir);
             if (!movedSuccessfully) {
                 System.out.println("Cannot move in that direction (wall or out of bounds).");
                 // Traducción: No se puede mover en esa dirección (pared o fuera de límites).
@@ -239,5 +239,26 @@ public class Jugador extends Entidad implements Movimiento {
      */
     public int getPuntos() {
         return puntos;
+    }
+
+    /**
+     * Returns how many lives the player currently has.
+     */
+    public int getVidasCount() {
+        return vidas.size();
+    }
+
+    /**
+     * Returns the current life/energy value on top of the lives stack (or 0 if none).
+     */
+    public int getVidaActual() {
+        return vidas.isEmpty() ? 0 : vidas.peek();
+    }
+
+    /**
+     * Returns the maximum life a single life can have.
+     */
+    public int getMaxVida() {
+        return MAX_VIDA;
     }
 }

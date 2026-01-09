@@ -146,12 +146,28 @@ public class InicioSesionController {
             return;
         }
 
-        // success
+        // success: show info then navigate to menu-seleccion.fxml
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Inicio de Sesión");
         alert.setHeaderText(null);
         alert.setContentText("Inicio de sesión exitoso. ¡Bienvenido al Maze Runner!");
         alert.showAndWait();
+
+        try {
+            // load FXML with FXMLLoader so we can access its controller and pass the Usuario
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("menu-seleccion.fxml"));
+            Parent root = loader.load();
+
+            // pass normalized email string to controller
+            ve.edu.ucab.mazerunnerfx.MenuSeleccionController controller = loader.getController();
+            controller.setUsuario(normalized);
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            showAlert(AlertType.ERROR, "No se pudo abrir el menú: " + e.getMessage());
+        }
     }
 
     private void showAlert(AlertType type, String message) {

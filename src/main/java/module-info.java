@@ -11,4 +11,5 @@ module ve.edu.ucab.mazerunnerfx.mazerunnerfx {
 
     opens ve.edu.ucab.mazerunnerfx to javafx.fxml;
     exports ve.edu.ucab.mazerunnerfx;
+    exports ve.edu.ucab.mazerunnerfx.models;
 }
