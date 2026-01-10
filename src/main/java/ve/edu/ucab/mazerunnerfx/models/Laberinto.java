@@ -450,13 +450,13 @@ public class Laberinto {
             String email = (this.jugador != null) ? this.jugador.getCorreoElectronico() : "default";
             int score = (this.jugador != null) ? this.jugador.getPuntos() : 0;
             switch (estado) {
-                case -1 -> Statistics.recordLoss(email, score);
+                case -1 -> Statistics.recordLoss(email, score, this.tiempoSegundos);
                 // el jugador murió
-                case 0 -> Statistics.recordWin(email, score);
+                case 0 -> Statistics.recordWin(email, score, this.tiempoSegundos);
                 // escapó
-                case 1 -> Statistics.recordQuit(email, score);
+                case 1 -> Statistics.recordQuit(email, score, this.tiempoSegundos);
                 // el usuario salió
-                default -> Statistics.recordQuit(email, score);
+                default -> Statistics.recordQuit(email, score, this.tiempoSegundos);
                 // salida genérica
             }
         } catch (Throwable t) {
@@ -469,6 +469,16 @@ public class Laberinto {
             default -> System.out.println("Has salido del juego. ¡Hasta la próxima!");
         }
         return true;
+    }
+
+    /**
+     * Public wrapper to finish the game from external callers (UI controllers).
+     * Calls the internal finParida to persist and update stats.
+     * @param estado -1 lost, 0 win, 1 quit
+     * @return true if finished successfully
+     */
+    public boolean finalizarPartida(int estado) {
+        return this.finParida(estado);
     }
 
     /**

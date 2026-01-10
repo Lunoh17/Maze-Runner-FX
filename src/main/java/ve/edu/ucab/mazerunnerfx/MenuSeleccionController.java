@@ -102,10 +102,7 @@ public class MenuSeleccionController {
             stage.setScene(new Scene(root, desiredW, desiredH));
             stage.show();
 
-            // Start game thread to resume entity movement loop if needed
-            Thread gameThread = new Thread(() -> lab.jugar(), "GameThread-Loaded");
-            gameThread.setDaemon(true);
-            gameThread.start();
+            // No background game loop started here; UI controller drives the interactions
 
         } catch (IOException e) {
             Alert alert = new Alert(AlertType.ERROR);
@@ -117,7 +114,25 @@ public class MenuSeleccionController {
 
     @FXML
     protected void onEstadisticas() {
-        // TODO: Implement statistics logic
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("estadisticas.fxml"));
+            Parent root = loader.load();
+            EstadisticasController c = loader.getController();
+            if (c != null) c.setUsuario(this.usuarioCorreo);
+            // obtain current stage from any node via usuarioEmail if available
+            Stage stage = null;
+            if (usuarioEmail != null) {
+                stage = (Stage) usuarioEmail.getScene().getWindow();
+            }
+            if (stage == null) {
+                // fallback to primary stage
+                stage = (Stage) javafx.stage.Stage.getWindows().filtered(javafx.stage.Window::isShowing).get(0);
+            }
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

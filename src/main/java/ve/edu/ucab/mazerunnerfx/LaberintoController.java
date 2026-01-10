@@ -92,7 +92,11 @@ public class LaberintoController {
                 laberinto.tiempoSegundos = this.elapsedSeconds;
             } catch (Throwable ignored) {
             }
-            ControladorBD.guardar(laberinto);
+            // Use the Laberinto API to finalize the game (this will save and record stats)
+            try {
+                laberinto.finalizarPartida(1); // 1 == quit
+            } catch (Throwable ignored) {
+            }
         }
 
         // navigate back to menu-seleccion.fxml and pass the player email if available
@@ -169,8 +173,17 @@ public class LaberintoController {
                 // if game ended by escaping or death, stop timer
                 if (!laberinto.jugador.taVivo() || laberinto.jugador.isEscapado()) {
                     stopTimer();
+                    // persist latest elapsed seconds into model
+                    try {
+                        laberinto.tiempoSegundos = this.elapsedSeconds;
+                    } catch (Throwable ignored) {
+                    }
                     if (!laberinto.jugador.taVivo()) {
-                        // show game over and return to menu
+                        // Player died
+                        try {
+                            laberinto.finalizarPartida(-1);
+                        } catch (Throwable ignored) {
+                        }
                         Platform.runLater(() -> {
                             javafx.scene.control.Alert a = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
                             a.setHeaderText(null);
@@ -179,6 +192,35 @@ public class LaberintoController {
                             try {
                                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("menu-seleccion.fxml"));
                                 javafx.scene.Parent root = loader.load();
+                                MenuSeleccionController menuController = loader.getController();
+                                if (menuController != null && laberinto != null && laberinto.jugador != null) {
+                                    menuController.setUsuario(laberinto.jugador.getCorreoElectronico());
+                                }
+                                javafx.stage.Stage stage = (javafx.stage.Stage) mazeCanvas.getScene().getWindow();
+                                stage.setScene(new javafx.scene.Scene(root));
+                                stage.show();
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        });
+                    } else if (laberinto.jugador.isEscapado()) {
+                        // Player escaped
+                        try {
+                            laberinto.finalizarPartida(0);
+                        } catch (Throwable ignored) {
+                        }
+                        Platform.runLater(() -> {
+                            javafx.scene.control.Alert a = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+                            a.setHeaderText(null);
+                            a.setContentText("¡Felicidades! ¡Has escapado del laberinto!");
+                            a.showAndWait();
+                            try {
+                                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("menu-seleccion.fxml"));
+                                javafx.scene.Parent root = loader.load();
+                                MenuSeleccionController menuController = loader.getController();
+                                if (menuController != null && laberinto != null && laberinto.jugador != null) {
+                                    menuController.setUsuario(laberinto.jugador.getCorreoElectronico());
+                                }
                                 javafx.stage.Stage stage = (javafx.stage.Stage) mazeCanvas.getScene().getWindow();
                                 stage.setScene(new javafx.scene.Scene(root));
                                 stage.show();
