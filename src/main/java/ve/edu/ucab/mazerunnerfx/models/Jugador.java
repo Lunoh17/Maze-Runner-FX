@@ -102,6 +102,29 @@ public class Jugador extends Entidad implements Movimiento {
     }
 
     /**
+     * Devuelve un arreglo con los valores de las vidas en el orden en que se almacenan.
+     * Esto se usa para persistir/restaurar el estado de vida del jugador.
+     * @return arreglo int[] con cada vida (valores de tipo short promovidos a int)
+     */
+    public int[] getVidasArray() {
+        synchronized (vidas) {
+            int[] arr = new int[vidas.size()];
+            for (int i = 0; i < vidas.size(); i++) {
+                arr[i] = vidas.get(i);
+            }
+            return arr;
+        }
+    }
+
+    /**
+     * Devuelve la cantidad de llaves que posee el jugador.
+     * @return número de llaves
+     */
+    public int getLlaves() {
+        return llaves;
+    }
+
+    /**
      * Indica si el jugador consiguió escapar del laberinto.
      * @return true si escapó
      */

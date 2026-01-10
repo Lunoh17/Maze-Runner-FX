@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
@@ -13,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import ve.edu.ucab.mazerunnerfx.models.Entidad;
 import ve.edu.ucab.mazerunnerfx.models.Laberinto;
+import ve.edu.ucab.mazerunnerfx.models.ControladorBD;
 
 import java.util.Set;
 
@@ -37,6 +39,10 @@ public class LaberintoController {
     @FXML
     private Label healthLabel;
 
+    @FXML
+    @SuppressWarnings("unused")
+    private javafx.scene.control.Button regresar;
+
     private Laberinto laberinto;
 
     private Timeline timeline;
@@ -50,11 +56,22 @@ public class LaberintoController {
             setupInput();
             render();
             // ensure the canvas has focus so it can receive WASD/arrow keys
-            mazeCanvas.requestFocus();
+            // Request focus after the Scene is realized so key events are delivered reliably
+            Platform.runLater(() -> {
+                try {
+                    mazeCanvas.requestFocus();
+                } catch (Throwable ignored) {
+                }
+            });
             // init labels
             updateScoreLabel();
             updateLivesAndHealth();
-            elapsedSeconds = 0;
+            // restore elapsed time from loaded model if present
+            try {
+                this.elapsedSeconds = Math.max(0L, this.laberinto.tiempoSegundos);
+            } catch (Throwable ignored) {
+                this.elapsedSeconds = 0L;
+            }
             updateTimeLabel();
             startTimer();
         }
@@ -63,6 +80,36 @@ public class LaberintoController {
     private void onDisplay(String s) {
         // parameter is intentionally available if needed by future features
         Platform.runLater(this::render);
+    }
+
+    @FXML
+    protected void onRegresar(ActionEvent event) {
+        // stop timer and persist current lab state
+        stopTimer();
+        if (laberinto != null) {
+            try {
+                // ensure latest elapsed time is stored in model before saving
+                laberinto.tiempoSegundos = this.elapsedSeconds;
+            } catch (Throwable ignored) {
+            }
+            ControladorBD.guardar(laberinto);
+        }
+
+        // navigate back to menu-seleccion.fxml and pass the player email if available
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("menu-seleccion.fxml"));
+            javafx.scene.Parent root = loader.load();
+            MenuSeleccionController menuController = loader.getController();
+            if (menuController != null && laberinto != null && laberinto.jugador != null) {
+                String correo = laberinto.jugador.getCorreoElectronico();
+                menuController.setUsuario(correo);
+            }
+            javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.show();
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void setupInput() {
@@ -155,6 +202,11 @@ public class LaberintoController {
     private void onTick(javafx.event.ActionEvent ev) {
         // use the ActionEvent parameter to avoid unused-parameter warnings
         elapsedSeconds++;
+        // also persist to model so future saves include the latest time
+        try {
+            if (laberinto != null) laberinto.tiempoSegundos = elapsedSeconds;
+        } catch (Throwable ignored) {
+        }
         updateTimeLabel();
     }
 

@@ -7,6 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.text.Font?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ve.edu.ucab.mazerunnerfx.LaberintoController"
@@ -19,6 +20,12 @@
                 <Label fx:id="timeLabel" text="Tiempo: 00:00" />
                 <Label fx:id="livesLabel" text="Vidas: 3" />
                 <Label fx:id="healthLabel" text="Energia: 10/10" />
+                <!-- Regresar button to return to menu -->
+                <Button fx:id="regresar" text="Regresar" mnemonicParsing="false" onAction="#onRegresar">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Button>
             </children>
         </HBox>
     </top>

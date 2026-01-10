@@ -11,6 +11,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Screen;
+import ve.edu.ucab.mazerunnerfx.models.Laberinto;
 
 public class MenuSeleccionController {
 
@@ -60,8 +62,57 @@ public class MenuSeleccionController {
     }
 
     @FXML
-    protected void onCargarPartida() {
-        // TODO: Implement load game logic
+    protected void onCargarPartida(ActionEvent event) {
+        // Use the saved file for the current user
+        String correo = (usuarioCorreo == null || usuarioCorreo.isEmpty()) ? "default" : usuarioCorreo;
+        Laberinto lab = Laberinto.cargarJson(correo);
+        if (lab == null) {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setHeaderText(null);
+            a.setContentText("No se encontró una partida guardada para el usuario: " + correo);
+            a.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("laberinto.fxml"));
+            Parent root = loader.load();
+            LaberintoController controller = loader.getController();
+            if (controller != null) {
+                controller.setLaberinto(lab);
+                // restore the timer value stored in the model if any
+                // lab.tiempoSegundos is now part of Laberinto and will be applied by controller.setLaberinto
+            }
+
+            // Compute a larger window size based on maze dimensions so it's easier to see
+            double cellPixels = 14.0; // target pixels per cell
+            double marginW = 120.0; // extra width for HUD and padding
+            double marginH = 160.0; // extra height for HUD and padding
+            double desiredW = Math.max(800, lab.getWidth() * cellPixels + marginW);
+            double desiredH = Math.max(600, lab.getHeight() * cellPixels + marginH);
+
+            // Clamp to available screen bounds
+            javafx.geometry.Rectangle2D vb = Screen.getPrimary().getVisualBounds();
+            desiredW = Math.min(desiredW, Math.max(400, vb.getWidth() - 80));
+            desiredH = Math.min(desiredH, Math.max(300, vb.getHeight() - 120));
+
+            if (controller != null) controller.setWindowSize(desiredW, desiredH);
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root, desiredW, desiredH));
+            stage.show();
+
+            // Start game thread to resume entity movement loop if needed
+            Thread gameThread = new Thread(() -> lab.jugar(), "GameThread-Loaded");
+            gameThread.setDaemon(true);
+            gameThread.start();
+
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setHeaderText(null);
+            alert.setContentText("No se pudo abrir la vista de juego: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     @FXML

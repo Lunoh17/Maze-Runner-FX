@@ -28,6 +28,10 @@ public class Laberinto {
     // almacenar el jugador para que persista y se use para iniciar el bucle de entrada
     public Jugador jugador;
 
+    // Persisted elapsed time (in seconds) for the saved maze. Serialized by Gson.
+    // This field is new: it stores the time so saved files include the elapsed play time.
+    public long tiempoSegundos = 0L;
+
     // Listener hook for UI to receive the textual representation when display() is called
     private transient Consumer<String> displayListener = null;
 
@@ -77,15 +81,27 @@ public class Laberinto {
         }
         // Start generation from the center to avoid strong corner bias
         generateMaze(this.x / 2, this.y / 2);
+        // populate entities using shared helper so cargado can reuse it if needed
+        populateDefaultEntities();
+    }
+
+    // Helper to populate default entities (used by constructor and when loading a save that lacks entities)
+    private void populateDefaultEntities() {
         final int nEntidad = Math.toIntExact(Math.round((double) (this.x * this.y) / 10d)); // 10% de las celdas tendrán peligros
-        // Coloca al jugador en la celda de inicio (0,0)
-        // Usar el jugador existente si fue inyectado; de lo contrario, usar el predeterminado
+        // Coloca al jugador en la celda de inicio (0,0) si no existe
         if (this.jugador == null) {
             this.jugador = new Jugador("player@example.com", "password");
+            this.jugador.setPosition(0, 0);
+            this.jugador.celdaActual = maze[0][0];
+            maze[0][0].addEntidad(this.jugador);
+        } else {
+            // ensure jugador is placed at initial position if its position is default
+            if (this.jugador.getPosX() == 0 && this.jugador.getPosY() == 0 && this.jugador.celdaActual == null) {
+                this.jugador.celdaActual = maze[0][0];
+                maze[0][0].addEntidad(this.jugador);
+            }
         }
-        this.jugador.setPosition(0, 0);
-        this.jugador.celdaActual = maze[0][0];
-        maze[0][0].addEntidad(this.jugador);
+
         for (int i = 0; i < nEntidad; i++) {
             int px, py;
             do {
@@ -153,7 +169,6 @@ public class Laberinto {
             maze[px][py].addEntidad(puerta);
             entidades.add(puerta);
         }
-
     }
 
 
@@ -220,7 +235,7 @@ public class Laberinto {
                 }
             }
 
-            // Reconstruir la lista de entidades desde root.entidades (preferido) o escaneando celdas
+            // Reconstruir la lista de entidades desde root.entidades (preferido) o escanando celdas
             if (root.has("entidades")) {
                 JsonArray ents = root.getAsJsonArray("entidades");
                 for (JsonElement ee : ents) {
@@ -239,27 +254,31 @@ public class Laberinto {
                     }
                 }
             } else {
-                // alternativa: escanear celdas por arreglos de contenido
-                if (root.has("maze")) {
-                    JsonArray mazeArray = root.getAsJsonArray("maze");
-                    for (int i = 0; i < mazeArray.size() && i < lab.maze.length; i++) {
-                        JsonArray col = mazeArray.get(i).getAsJsonArray();
-                        for (int j = 0; j < col.size() && j < lab.maze[i].length; j++) {
-                            JsonObject cellObj = col.get(j).getAsJsonObject();
-                            if (cellObj.has("contenido")) {
-                                JsonArray content = cellObj.getAsJsonArray("contenido");
-                                for (JsonElement ce : content) {
-                                    Entidad entidad = crearEntidadDesdeJson(ce.getAsJsonObject());
-                                    if (entidad != null) {
-                                        lab.maze[i][j].addEntidad(entidad);
-                                        if (entidad instanceof Trampa || entidad instanceof Enemigo) {
-                                            lab.entidades.add(entidad);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                // No entities saved: do not randomly repopulate – keep maze layout only.
+                // Ensure there is at least a player in the maze so UI and input work.
+                if (lab.jugador == null) {
+                    lab.jugador = new Jugador("player@example.com", "password");
+                    lab.jugador.setPosition(0, 0);
+                    lab.jugador.celdaActual = lab.maze[0][0];
+                    lab.maze[0][0].addEntidad(lab.jugador);
+                } else {
+                    // If jugador has valid position, place it in the corresponding cell
+                    if (lab.jugador.getPosX() >= 0 && lab.jugador.getPosX() < lab.x && lab.jugador.getPosY() >= 0 && lab.jugador.getPosY() < lab.y) {
+                        lab.jugador.celdaActual = lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()];
+                        lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()].addEntidad(lab.jugador);
+                    } else {
+                        lab.jugador.setPosition(0,0);
+                        lab.jugador.celdaActual = lab.maze[0][0];
+                        lab.maze[0][0].addEntidad(lab.jugador);
                     }
+                }
+            }
+
+            // If the saved JSON contains an elapsed time field, restore it into the Laberinto
+            if (root.has("tiempoSegundos")) {
+                try {
+                    lab.tiempoSegundos = root.get("tiempoSegundos").getAsLong();
+                } catch (Throwable ignored) {
                 }
             }
 
@@ -328,6 +347,17 @@ public class Laberinto {
                             lab.entidades.add(entidad);
                         }
                     }
+                }
+            } else {
+                // regenerate default entities when entities are not present in save
+                lab.populateDefaultEntities();
+            }
+
+            // restore saved elapsed time if present
+            if (root.has("tiempoSegundos")) {
+                try {
+                    lab.tiempoSegundos = root.get("tiempoSegundos").getAsLong();
+                } catch (Throwable ignored) {
                 }
             }
 
