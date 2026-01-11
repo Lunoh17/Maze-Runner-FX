@@ -12,8 +12,6 @@ import java.io.IOException;
 
 public class Controlador {
 
-    // --- REFERENCIAS FXML (Los fx:id de SceneBuilder) ---
-    // Sin estas líneas, Java no sabe qué es 'correoRegistro', 'recuperarCorreo', etc.
     @FXML private TextField correoInicio;
     @FXML private PasswordField contraseniaInicio;
 
@@ -23,10 +21,8 @@ public class Controlador {
 
     @FXML private TextField recuperarCorreo;
 
-    // --- LÓGICA DE NEGOCIO (SOLID) ---
     private final ServicioAuten servicioAuten = new ServicioAuten();
 
-    // --- MÉTODOS DE ACCIÓN ---
 
     @FXML
     public void manejarInicioSesion(ActionEvent event) {
@@ -90,7 +86,6 @@ public class Controlador {
         }
     }
 
-    // --- NAVEGACIÓN Y UTILIDADES ---
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
