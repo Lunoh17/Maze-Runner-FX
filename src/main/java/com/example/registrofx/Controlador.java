@@ -12,6 +12,8 @@ import java.io.IOException;
 
 public class Controlador {
 
+    // --- REFERENCIAS FXML (Los fx:id de SceneBuilder) ---
+    // Sin estas líneas, Java no sabe qué es 'correoRegistro', 'recuperarCorreo', etc.
     @FXML private TextField correoInicio;
     @FXML private PasswordField contraseniaInicio;
 
@@ -20,6 +22,75 @@ public class Controlador {
     @FXML private PasswordField confirmacionRegistro;
 
     @FXML private TextField recuperarCorreo;
+
+    // --- LÓGICA DE NEGOCIO (SOLID) ---
+    private final ServicioAuten servicioAuten = new ServicioAuten();
+
+    // --- MÉTODOS DE ACCIÓN ---
+
+    @FXML
+    public void manejarInicioSesion(ActionEvent event) {
+        try {
+            Usuario user = new Usuario(correoInicio.getText());
+            Contrasenia pass = new Contrasenia(contraseniaInicio.getText());
+
+            if (user.getCorreo() == null || pass.getContrasenia() == null) {
+                mostrarAlerta("Error", "Formato de correo o contraseña inválido.", Alert.AlertType.ERROR);
+                return;
+            }
+
+            String resultado = servicioAuten.login(user.getCorreo(), pass.getContrasenia());
+
+            if (resultado.equals("EXITO")) {
+                mostrarAlerta("Éxito", "Bienvenido " + user.getCorreo(), Alert.AlertType.INFORMATION);
+            } else if (resultado.equals("PASS_ERROR")) {
+                mostrarAlerta("Error", "Contraseña incorrecta.", Alert.AlertType.ERROR);
+            } else {
+                mostrarAlerta("Error", "El usuario no existe.", Alert.AlertType.ERROR);
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error", "Fallo en el sistema de seguridad.", Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    public void manejarRegistro(ActionEvent event) {
+        try {
+            Usuario user = new Usuario(correoRegistro.getText());
+            Contrasenia pass = new Contrasenia(contraseniaRegistro.getText(), confirmacionRegistro.getText());
+
+            if (user.getCorreo() == null || pass.getContrasenia() == null) {
+                mostrarAlerta("Error", "Datos inválidos o contraseñas no coinciden.", Alert.AlertType.ERROR);
+                return;
+            }
+
+            if (servicioAuten.registrar(user.getCorreo(), pass.getContrasenia())) {
+                mostrarAlerta("Éxito", "Usuario registrado correctamente.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "El usuario ya existe.", Alert.AlertType.WARNING);
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error", "Error al procesar el registro.", Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    public void manejarRecuperacion(ActionEvent event) {
+        try {
+            String correo = recuperarCorreo.getText();
+            String pass = servicioAuten.recuperarPass(correo);
+
+            if (pass != null) {
+                mostrarAlerta("Recuperada", "Su contraseña es: " + pass, Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "Usuario no encontrado.", Alert.AlertType.ERROR);
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error", "Error al recuperar datos.", Alert.AlertType.ERROR);
+        }
+    }
+
+    // --- NAVEGACIÓN Y UTILIDADES ---
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
@@ -30,7 +101,7 @@ public class Controlador {
     }
 
     public void irALogin(ActionEvent event) throws IOException {
-        cambiarEscena(event, "panel-principal.fxml"); // Ajusta el nombre exacto de tu archivo
+        cambiarEscena(event, "panel-principal.fxml");
     }
 
     public void irARegistro(ActionEvent event) throws IOException {
@@ -46,69 +117,5 @@ public class Controlador {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.show();
-    }
-
-    @FXML
-    public void manejarInicioSesion(ActionEvent event) {
-        Usuario user = new Usuario(correoInicio.getText());
-        Contrasenia pass = new Contrasenia(contraseniaInicio.getText());
-
-        if (user.getCorreo() == null || pass.getContrasenia() == null) {
-            mostrarAlerta("Error", "Formato de correo o contraseña inválido.", Alert.AlertType.ERROR);
-            return;
-        }
-
-        CompararDatos comparar = new CompararDatos(user, pass);
-        if (comparar.EnviarDatosSesion()) {
-            mostrarAlerta("Éxito", "Bienvenido " + user.getCorreo(), Alert.AlertType.INFORMATION);
-        } else {
-            mostrarAlerta("Error", "Usuario no registrado o contraseña incorrecta.", Alert.AlertType.ERROR);
-        }
-    }
-
-    @FXML
-    public void manejarRegistro(ActionEvent event) {
-        Usuario user = new Usuario(correoRegistro.getText());
-        Contrasenia pass = new Contrasenia(contraseniaRegistro.getText(), confirmacionRegistro.getText());
-
-        if (user.getCorreo() == null) {
-            mostrarAlerta("Error", "Correo inválido.", Alert.AlertType.ERROR);
-            return;
-        }
-        if (pass.getContrasenia() == null) {
-            mostrarAlerta("Error", "La contraseña no coincide o no cumple los requisitos (6 caracteres, Mayúscula, Especial).", Alert.AlertType.ERROR);
-            return;
-        }
-
-        CompararDatos comparar = new CompararDatos(user, pass);
-        if (!comparar.EnviarDatosRegistro()) {
-            GuardarDatos guardar = new GuardarDatos(user, pass);
-            guardar.GuardarFormatoRegistro();
-            mostrarAlerta("Éxito", "Usuario registrado correctamente.", Alert.AlertType.INFORMATION);
-        } else {
-            mostrarAlerta("Error", "El usuario ya existe.", Alert.AlertType.WARNING);
-        }
-    }
-
-    @FXML
-    public void manejarRecuperacion(ActionEvent event) {
-        String correo = recuperarCorreo.getText();
-        Usuario user = new Usuario(correo);
-
-        if (user.getCorreo() == null) {
-            mostrarAlerta("Error", "Ingrese un correo válido.", Alert.AlertType.ERROR);
-            return;
-        }
-
-        CompararDatos buscador = new CompararDatos(user);
-        String passRecuperada = buscador.obtenerContraseniaRecuperada(correo);
-
-        if (passRecuperada != null) {
-            mostrarAlerta("Recuperación Exitosa",
-                    "La contraseña para " + correo + " es: " + passRecuperada,
-                    Alert.AlertType.INFORMATION);
-        } else {
-            mostrarAlerta("Error", "El usuario no existe en nuestros registros.", Alert.AlertType.ERROR);
-        }
     }
 }
