@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="407.0" prefWidth="439.0" style="-fx-background-color: linear-gradient(to bottom right, #02111B, #3F4045);;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.registrofx.Controlador">
+    <children>
+        <VBox layoutX="21.0" layoutY="23.0" prefHeight="361.0" prefWidth="394.0" spacing="15.0" style="-fx-background-color: #FFFFFF;">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            </padding>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+        </VBox>
+        <Label layoutX="42.0" layoutY="73.0" prefHeight="32.0" prefWidth="158.0" text="SING UP" textAlignment="CENTER" textFill="#3f4045">
+            <font>
+                <Font name="System Bold" size="22.0" />
+            </font>
+        </Label>
+        <Label layoutX="87.0" layoutY="179.0" prefHeight="18.0" prefWidth="123.0" text="Contraseña" />
+        <TextField fx:id="correoRegistro" layoutX="88.0" layoutY="138.0" prefHeight="26.0" prefWidth="263.0" promptText="ejemplo@dominio.com" style="-fx-effect: innershadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);;" />
+        <Label layoutX="89.0" layoutY="119.0" prefHeight="18.0" prefWidth="104.0" text="Correo Electronico" />
+        <PasswordField fx:id="contraseniaRegistro" layoutX="88.0" layoutY="198.0" prefHeight="26.0" prefWidth="263.0" promptText="*************" style="-fx-effect: innershadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);;" />
+        <Button fx:id="botonRegistrarse" layoutX="146.0" layoutY="289.0" mnemonicParsing="false" onAction="#manejarRegistro" prefHeight="42.0" prefWidth="147.0" style="-fx-background-color: linear-gradient(to bottom right, #3F4045, #02111B);;" text="REGISTRARSE" textFill="WHITE">
+            <font>
+                <Font name="System Bold" size="12.0" />
+            </font>
+        </Button>
+        <Hyperlink fx:id="poseoCuenta" layoutX="242.0" layoutY="339.0" onAction="#irALogin" prefHeight="24.0" prefWidth="80.0" text="Haz clic aquí.">
+            <font>
+                <Font name="System Bold Italic" size="10.0" />
+            </font>
+        </Hyperlink>
+        <Accordion layoutX="87.0" layoutY="119.0" />
+        <Label layoutX="116.0" layoutY="342.0" prefHeight="18.0" prefWidth="130.0" text="¿Ya tienes una cuenta?" />
+      <Label layoutX="88.0" layoutY="231.0" text="Confirmacion Contraseña" />
+      <PasswordField fx:id="confirmacionRegistro" layoutX="87.0" layoutY="249.0" prefHeight="26.0" prefWidth="263.0" promptText="*************" />
+    </children>
+</AnchorPane>
