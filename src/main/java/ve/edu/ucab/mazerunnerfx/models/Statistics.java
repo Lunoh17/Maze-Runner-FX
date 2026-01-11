@@ -16,18 +16,56 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Maneja el registro y la persistencia de estadísticas de jugadores.
- * Guarda y muestra partidas ganadas/perdidas, total de partidas y puntaje máximo.
+ * Guarda y muestra partidas ganadas/perdidas, total de partidas y puntaje máximo,
+ * además de un historial de partidas (tiempo y puntaje) por jugador.
  */
 public class Statistics {
     private static final String STATS_FILE_NAME = "stats.json";
+
+    /**
+     * Registro de una partida individual para historial.
+     */
+    public static class GameRecord {
+        public long timestampMillis;
+        public long durationSeconds;
+        public int score;
+        public String result; // "WIN", "LOSS", "QUIT"
+
+        public GameRecord() {}
+
+        public GameRecord(long timestampMillis, long durationSeconds, int score, String result) {
+            this.timestampMillis = timestampMillis;
+            this.durationSeconds = durationSeconds;
+            this.score = score;
+            this.result = result;
+        }
+
+        public long getTimestampMillis() { return timestampMillis; }
+        public long getDurationSeconds() { return durationSeconds; }
+        public int getScore() { return score; }
+        public String getResult() { return result; }
+
+        public String getFormattedDate() {
+            Date d = new Date(timestampMillis);
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d);
+        }
+
+        public String getFormattedDuration() {
+            long mins = durationSeconds / 60;
+            long secs = durationSeconds % 60;
+            return String.format("%02d:%02d", mins, secs);
+        }
+    }
 
     /**
      * Estructura de estadísticas asociadas a un jugador individual.
@@ -38,6 +76,8 @@ public class Statistics {
         public int games;
         // caché de conveniencia: ganadas + perdidas
         public int highestScore;
+        // historial de partidas (más reciente al final)
+        public List<GameRecord> records = new ArrayList<>();
 
         /**
          * Recalcula el total de partidas jugadas a partir de ganadas y perdidas.
@@ -78,6 +118,7 @@ public class Statistics {
             // asegurar que el valor en caché de partidas sea consistente
             for (PlayerStats ps : s.players.values()) {
                 ps.recompute();
+                if (ps.records == null) ps.records = new ArrayList<>();
             }
             return s;
         } catch (IOException e) {
@@ -112,13 +153,15 @@ public class Statistics {
      * Registra una victoria para el usuario e incrementa estadísticas persistidas.
      * @param email identificador del jugador
      * @param score puntaje obtenido en la partida
+     * @param durationSeconds duración de la partida en segundos
      */
-    public static void recordWin(String email, int score) {
+    public static void recordWin(String email, int score, long durationSeconds) {
         Statistics s = load();
         PlayerStats ps = getOrCreate(s, email);
         ps.wins += 1;
         if (score > ps.highestScore) ps.highestScore = score;
         ps.recompute();
+        ps.records.add(new GameRecord(System.currentTimeMillis(), durationSeconds, score, "WIN"));
         save(s);
     }
 
@@ -126,13 +169,15 @@ public class Statistics {
      * Registra una derrota para el usuario e incrementa estadísticas persistidas.
      * @param email identificador del jugador
      * @param score puntaje obtenido en la partida
+     * @param durationSeconds duración de la partida en segundos
      */
-    public static void recordLoss(String email, int score) {
+    public static void recordLoss(String email, int score, long durationSeconds) {
         Statistics s = load();
         PlayerStats ps = getOrCreate(s, email);
         ps.losses += 1;
         if (score > ps.highestScore) ps.highestScore = score;
         ps.recompute();
+        ps.records.add(new GameRecord(System.currentTimeMillis(), durationSeconds, score, "LOSS"));
         save(s);
     }
 
@@ -141,13 +186,27 @@ public class Statistics {
      * Actualiza el puntaje máximo si el usuario abandona la partida sin concluir.
      * @param email identificador del jugador
      * @param score puntaje alcanzado
+     * @param durationSeconds duración de la partida en segundos
      */
-    public static void recordQuit(String email, int score) {
+    public static void recordQuit(String email, int score, long durationSeconds) {
         // Actualmente, no alteramos ganadas/perdidas/partidas por una salida.
         Statistics s = load();
         PlayerStats ps = getOrCreate(s, email);
         if (score > ps.highestScore) ps.highestScore = score;
+        ps.records.add(new GameRecord(System.currentTimeMillis(), durationSeconds, score, "QUIT"));
         save(s);
+    }
+
+    /**
+     * Devuelve el historial de partidas para un usuario dado (orden original: más antiguo -> más reciente).
+     * @param email correo del usuario
+     * @return lista de GameRecord (vacía si no hay datos)
+     */
+    public static List<GameRecord> getRecordsForUser(String email) {
+        Statistics s = load();
+        PlayerStats ps = s.players.get((email == null || email.isEmpty()) ? "default" : email);
+        if (ps == null || ps.records == null) return new ArrayList<>();
+        return new ArrayList<>(ps.records);
     }
 
     /**
@@ -199,6 +258,11 @@ public class Statistics {
                     PlayerStats ps = into.computeIfAbsent(email, k -> new PlayerStats());
                     // no cambiar ganadas/perdidas/partidas; solo sembrar puntaje máximo para visibilidad
                     if (puntos > ps.highestScore) ps.highestScore = puntos;
+                    // seed a simple record if tiempoSegundos exists (for visibility)
+                    if (root.has("tiempoSegundos")) {
+                        long t = root.get("tiempoSegundos").getAsLong();
+                        ps.records.add(new GameRecord(0L, t, puntos, "UNKNOWN"));
+                    }
                 }
             } catch (Throwable ignored) {
                 // ignorar archivos de guardado malformados
@@ -207,6 +271,7 @@ public class Statistics {
         // asegurar que todos tengan 'games' recomputado
         for (PlayerStats ps : into.values()) {
             ps.recompute();
+            if (ps.records == null) ps.records = new ArrayList<>();
         }
     }
 }
