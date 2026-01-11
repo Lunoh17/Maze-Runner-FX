@@ -137,7 +137,7 @@ public class LaberintoController {
                         for (Entidad e : Set.copyOf(contents)) {
                             e.interact(laberinto.jugador);
                             char ascii = e.obtenerAscii();
-                            if (ascii == 'K' || ascii == 'C') {
+                            if (ascii == 'K' || ascii == 'C' || ascii == 'G' || ascii == 'B') {
                                 // remove from cell and from global list
                                 laberinto.jugador.celdaActual.removeEntidad(e);
                                 laberinto.removeEntidadGlobal(e);
@@ -155,7 +155,7 @@ public class LaberintoController {
                         for (Entidad e : Set.copyOf(contents2)) {
                             e.interact(laberinto.jugador);
                             char ascii = e.obtenerAscii();
-                            if (ascii == 'K' || ascii == 'C') {
+                            if (ascii == 'K' || ascii == 'C' || ascii == 'G' || ascii == 'B') {
                                 laberinto.jugador.celdaActual.removeEntidad(e);
                                 laberinto.removeEntidadGlobal(e);
                             }
@@ -347,6 +347,7 @@ public class LaberintoController {
                         case 'T' -> gc.setFill(Color.DARKGRAY);
                         case 'C' -> gc.setFill(Color.GOLD);
                         case 'K' -> gc.setFill(Color.ORANGE);
+                        case 'B' -> gc.setFill(Color.DARKRED);
                         case 'X' -> gc.setFill(Color.FORESTGREEN);
                         default -> gc.setFill(Color.BLACK);
                     }

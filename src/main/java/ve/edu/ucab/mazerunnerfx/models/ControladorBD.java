@@ -77,6 +77,35 @@ public class ControladorBD {
             root.addProperty("tiempoSegundos", lab.tiempoSegundos);
         } catch (Throwable ignored) {}
 
+        // Serialize current entities so saves restore exact positions/fields on load
+        try {
+            Entidad[] ents = lab.getEntidadesSnapshot();
+            if (ents != null && ents.length > 0) {
+                JsonArray ja = new JsonArray();
+                for (Entidad ent : ents) {
+                    if (ent == null) continue;
+                    // jugador saved separately
+                    if (ent instanceof Jugador) continue;
+                    JsonObject eo = new JsonObject();
+                    eo.addProperty("ascii", String.valueOf(ent.obtenerAscii()));
+                    try { eo.addProperty("posX", ent.getPosX()); } catch (Throwable ignored2) {}
+                    try { eo.addProperty("posY", ent.getPosY()); } catch (Throwable ignored2) {}
+                    // If it's a Trampa, include damage value for fidelity
+                    if (ent instanceof Trampa) {
+                        try {
+                            java.lang.reflect.Field f = Trampa.class.getDeclaredField("danio");
+                            f.setAccessible(true);
+                            short d = f.getShort(ent);
+                            eo.addProperty("danio", (int) d);
+                        } catch (Throwable ignored2) {}
+                    }
+                    ja.add(eo);
+                }
+                if (ja.size() > 0) root.add("entidades", ja);
+            }
+        } catch (Throwable ignored) {
+        }
+
         return root;
     }
 

@@ -284,4 +284,18 @@ public class Jugador extends Entidad implements Movimiento {
     public int getMaxVida() {
         return MAX_VIDA;
     }
+
+    public void recuperarVida(short energiaRecuperada) {
+        if (!vidas.isEmpty()) {
+            short vidaActual = vidas.pop();
+            vidaActual += energiaRecuperada;
+            if (vidaActual > MAX_VIDA) {
+                vidaActual = MAX_VIDA;
+            }
+            vidas.push(vidaActual);
+            System.out.println("Vida recuperada. Vida actual: " + vidaActual + "/" + MAX_VIDA);
+        } else {
+            System.out.println("No tienes vidas para recuperar.");
+        }
+    }
 }

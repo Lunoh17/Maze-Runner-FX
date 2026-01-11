@@ -8,8 +8,6 @@ import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Vector;
 import java.util.function.Consumer;
 
@@ -85,6 +83,30 @@ public class Laberinto {
         populateDefaultEntities();
     }
 
+    private int explosiveWallCount = -1; // if >=0, use this exact count when placing explosive walls
+
+    /**
+     * Create a Laberinto with explicit explosive wall count (useful to control difficulty placement).
+     * @param x width
+     * @param y height
+     * @param explosiveCount exact number of explosive walls to place (>=0). If negative, fallback to default rule.
+     */
+    public Laberinto(int x, int y, int explosiveCount) {
+        this.x = Math.max(MIN_DIM, Math.min(MAX_DIM, x));
+        this.y = Math.max(MIN_DIM, Math.min(MAX_DIM, y));
+        this.explosiveWallCount = explosiveCount;
+        maze = new Celda[this.x][this.y];
+        for (int i = 0; i < maze.length; i++) {
+            for (int j = 0; j < maze[i].length; j++) {
+                maze[i][j] = new Celda();
+            }
+        }
+        // Start generation from the center to avoid strong corner bias
+        generateMaze(this.x / 2, this.y / 2);
+        // populate entities using shared helper so cargado can reuse it if needed
+        populateDefaultEntities();
+    }
+
     // Helper to populate default entities (used by constructor and when loading a save that lacks entities)
     private void populateDefaultEntities() {
         final int nEntidad = Math.toIntExact(Math.round((double) (this.x * this.y) / 10d)); // 10% de las celdas tendrán peligros
@@ -102,7 +124,9 @@ public class Laberinto {
             }
         }
 
-        for (int i = 0; i < nEntidad; i++) {
+        // Place crystals at half the previous density (previously nEntidad -> now half). Ensure at least 1 crystal.
+        int nCristales = Math.max(1, nEntidad / 2);
+        for (int i = 0; i < nCristales; i++) {
             int px, py;
             do {
                 px = (int) (Math.random() * this.x);
@@ -113,16 +137,81 @@ public class Laberinto {
             maze[px][py].addEntidad(cristales);
             entidades.add(cristales);
         }
-        for (int i = 0; i < nEntidad; i++) {
-            int px, py;
+        // Place traps according to the rule: one trap per every 5 rows of the maze (floor(y/5)).
+        // Example: y=5 => 1 trap, y=9 => 1 trap, y=10 => 2 traps.
+        int numTraps = this.y / 5;
+        for (int i = 0; i < numTraps; i++) {
+            int px = 0, py = 0;
+            int attempts = 0;
+            // try to find an empty non-start cell; give up after a large number of attempts to avoid infinite loop
             do {
                 px = (int) (Math.random() * this.x);
                 py = (int) (Math.random() * this.y);
-            } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
-            Trampa enemigo = (Math.round(Math.random())) == 0 ? new Trampa() : new Enemigo();
-            enemigo.setPosition(px, py);
-            maze[px][py].addEntidad(enemigo);
-            entidades.add(enemigo);
+                attempts++;
+            } while (((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty()) && attempts < 1000);
+            if (attempts >= 1000) {
+                // unable to place this trap; skip
+                continue;
+            }
+            Trampa trampa = new Trampa();
+            trampa.setPosition(px, py);
+            maze[px][py].addEntidad(trampa);
+            entidades.add(trampa);
+        }
+        // Place Energia using the same rule as traps: one Energia per every 5 rows (floor(y/5)).
+        // Energies will not be placed on the start cell or on occupied cells; retries are bounded.
+        int numEnergia = numTraps; // same count as traps
+        for (int i = 0; i < numEnergia; i++) {
+            int px = 0, py = 0;
+            int attempts = 0;
+            do {
+                px = (int) (Math.random() * this.x);
+                py = (int) (Math.random() * this.y);
+                attempts++;
+            } while (((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty()) && attempts < 1000);
+            if (attempts >= 1000) {
+                // skip if unable to find free cell
+                continue;
+            }
+            Energia energia = new Energia();
+            energia.setPosition(px, py);
+            maze[px][py].addEntidad(energia);
+            entidades.add(energia);
+        }
+        // Place explosive walls as optional shortcuts: one per every 10 rows (floor(y/10)).
+        // Each explosive wall is placed on the far side of an existing closed wall so the player
+        // can attempt to move through the wall (takes damage and destroys the wall entity).
+        int numExplosive;
+        if (this.explosiveWallCount >= 0) {
+            numExplosive = Math.max(0, this.explosiveWallCount);
+        } else {
+            numExplosive = Math.max(0, this.y / 10);
+        }
+        for (int i = 0; i < numExplosive; i++) {
+            int attempts = 0;
+            boolean placed = false;
+            while (!placed && attempts < 2000) {
+                attempts++;
+                int cx = (int) (Math.random() * this.x);
+                int cy = (int) (Math.random() * this.y);
+                if (cx == 0 && cy == 0) continue;
+                // pick a random direction that currently has a closed wall
+                Laberinto.DIR[] dirs = Laberinto.DIR.values();
+                Laberinto.DIR dir = dirs[(int) (Math.random() * dirs.length)];
+                int nx = cx + dir.direccionX;
+                int ny = cy + dir.direccionY;
+                if (!between(nx, this.x) || !between(ny, this.y)) continue;
+                // ensure there is a wall between cx,cy and nx,ny so this represents a breakable wall
+                if ((maze[cx][cy].valor & dir.bit) != 0) continue; // there's already a passage
+                // ensure destination cell is empty
+                if (!maze[nx][ny].obtenerContenido().isEmpty()) continue;
+                // place explosive wall in the destination cell
+                ExplosiveWall bw = new ExplosiveWall();
+                bw.setPosition(nx, ny);
+                maze[nx][ny].addEntidad(bw);
+                entidades.add(bw);
+                placed = true;
+            }
         }
         for (int i = 0; i < 1; i++) {
             int px, py;
@@ -256,13 +345,15 @@ public class Laberinto {
             } else {
                 // No entities saved: do not randomly repopulate – keep maze layout only.
                 // Ensure there is at least a player in the maze so UI and input work.
+                // Entities not present in this save: do NOT regenerate random entities here.
+                // Preserve the maze layout exactly and only ensure a player entity exists and is placed.
                 if (lab.jugador == null) {
                     lab.jugador = new Jugador("player@example.com", "password");
                     lab.jugador.setPosition(0, 0);
                     lab.jugador.celdaActual = lab.maze[0][0];
                     lab.maze[0][0].addEntidad(lab.jugador);
                 } else {
-                    // If jugador has valid position, place it in the corresponding cell
+                    // If jugador has valid position, place it in the corresponding cell; otherwise reset to 0,0
                     if (lab.jugador.getPosX() >= 0 && lab.jugador.getPosX() < lab.x && lab.jugador.getPosY() >= 0 && lab.jugador.getPosY() < lab.y) {
                         lab.jugador.celdaActual = lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()];
                         lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()].addEntidad(lab.jugador);
@@ -349,8 +440,26 @@ public class Laberinto {
                     }
                 }
             } else {
-                // regenerate default entities when entities are not present in save
-                lab.populateDefaultEntities();
+                // No entities saved: do not randomly repopulate – keep maze layout only.
+                // Ensure there is at least a player in the maze so UI and input work.
+                // Entities not present in this save: do NOT regenerate random entities here.
+                // Preserve the maze layout exactly and only ensure a player entity exists and is placed.
+                if (lab.jugador == null) {
+                    lab.jugador = new Jugador("player@example.com", "password");
+                    lab.jugador.setPosition(0, 0);
+                    lab.jugador.celdaActual = lab.maze[0][0];
+                    lab.maze[0][0].addEntidad(lab.jugador);
+                } else {
+                    // If jugador has valid position, place it in the corresponding cell; otherwise reset to 0,0
+                    if (lab.jugador.getPosX() >= 0 && lab.jugador.getPosX() < lab.x && lab.jugador.getPosY() >= 0 && lab.jugador.getPosY() < lab.y) {
+                        lab.jugador.celdaActual = lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()];
+                        lab.maze[lab.jugador.getPosX()][lab.jugador.getPosY()].addEntidad(lab.jugador);
+                    } else {
+                        lab.jugador.setPosition(0,0);
+                        lab.jugador.celdaActual = lab.maze[0][0];
+                        lab.maze[0][0].addEntidad(lab.jugador);
+                    }
+                }
             }
 
             // restore saved elapsed time if present
@@ -383,21 +492,9 @@ public class Laberinto {
             return Jugador.fromJson(eo);
         }
         char ascii = eo.has("ascii") ? eo.get("ascii").getAsString().charAt(0) : '?';
+        // Enemigo (E) -- treated as Trampa to eliminate Enemigo usage
         if (ascii == 'E') {
-            Enemigo en = new Enemigo();
-            if (eo.has("danio")) {
-                try {
-                    java.lang.reflect.Field f = Trampa.class.getDeclaredField("danio");
-                    f.setAccessible(true);
-                    f.setShort(en, (short) eo.get("danio").getAsInt());
-                } catch (Exception ignored) {
-                }
-            }
-            if (eo.has("posX") && eo.has("posY")) {
-                en.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
-            }
-            return en;
-        } else if (ascii == 'T') {
+            // For backwards compatibility treat saved 'E' as a plain Trampa (no movement behavior)
             Trampa t = new Trampa();
             if (eo.has("danio")) {
                 try {
@@ -411,31 +508,67 @@ public class Laberinto {
                 t.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
             }
             return t;
-        } else if (ascii == 'K') {
+        }
+        // Trampa (T)
+        else if (ascii == 'T') {
+            Trampa t = new Trampa();
+            if (eo.has("danio")) {
+                try {
+                    java.lang.reflect.Field f = Trampa.class.getDeclaredField("danio");
+                    f.setAccessible(true);
+                    f.setShort(t, (short) eo.get("danio").getAsInt());
+                } catch (Exception ignored) {
+                }
+            }
+            if (eo.has("posX") && eo.has("posY")) {
+                t.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return t;
+        }
+        // Llave (K)
+        else if (ascii == 'K') {
             Llave k = new Llave();
             if (eo.has("posX") && eo.has("posY")) {
                 k.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
             }
             return k;
-        } else if (ascii == 'X') {
+        }
+        // Puerta (X)
+        else if (ascii == 'X') {
             Puerta p = new Puerta();
             if (eo.has("posX") && eo.has("posY")) {
                 p.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
             }
             return p;
-        } else {
-            // entidad desconocida: crear una Entidad anónima genérica para posición y ASCII
-            Entidad e = new Entidad() {
-                @Override
-                public void interact(Jugador player) {
-                }
-            };
-            e.ascii = ascii;
-            if (eo.has("posX") && eo.has("posY")) {
-                e.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
-            }
-            return e;
         }
+        // Energia (G) - new entity
+        else if (ascii == 'G') {
+            Energia en = new Energia();
+            if (eo.has("posX") && eo.has("posY")) {
+                en.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return en;
+        }
+        // Explosive wall (B)
+        else if (ascii == 'B') {
+            ExplosiveWall bw = new ExplosiveWall();
+            if (eo.has("posX") && eo.has("posY")) {
+                bw.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return bw;
+        }
+        // default: unknown entity -> generic placeholder with ascii and position
+        Entidad e = new Entidad() {
+            @Override
+            public void interact(Jugador player) {
+                // no-op
+            }
+        };
+        e.ascii = ascii;
+        if (eo.has("posX") && eo.has("posY")) {
+            e.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+        }
+        return e;
     }
 
     /**
@@ -510,7 +643,9 @@ public class Laberinto {
             if (jugador.celdaActual.cantidadEntidades() > 1) {
                 for (Entidad e : jugador.celdaActual.obtenerContenido()) {
                     e.interact(jugador);
-                    if (e.ascii == 'K' || e.ascii == 'C') {
+                    if (e.ascii == 'K' || e.ascii == 'C' || e.ascii == 'G') {
+                        // remove from the current cell and global list to match GUI behavior
+                        jugador.celdaActual.removeEntidad(e);
                         entidades.removeElement(e);
                     }
                 }
@@ -683,7 +818,29 @@ public class Laberinto {
 
         // si la pared en la dirección está cerrada, no se puede mover
         if ((maze[entidadX][entidadY].valor & direccion.bit) == 0) {
-            return false;
+            // Closed wall: allow the player to force a passage if the destination cell contains
+            // an ExplosiveWall (acts as a breakable/shortcut). The explosive will interact
+            // (deal damage) and then be removed; the wall bit will be opened.
+            if (entidad instanceof Jugador jugadorMov) {
+                boolean foundExplosive = false;
+                for (Entidad e : maze[destinoX][destinoY].obtenerContenido()) {
+                    if (e instanceof ExplosiveWall) {
+                        foundExplosive = true;
+                        // trigger explosion (will apply damage to player)
+                        try { e.interact(jugadorMov); } catch (Throwable ignored) {}
+                        // remove explosive from the destination cell and from global entities
+                        maze[destinoX][destinoY].removeEntidad(e);
+                        entidades.removeElement(e);
+                        break;
+                    }
+                }
+                if (!foundExplosive) return false;
+                // open passage in both cells
+                maze[entidadX][entidadY].valor |= direccion.bit;
+                maze[destinoX][destinoY].valor |= direccion.opposite.bit;
+            } else {
+                return false;
+            }
         }
 
         // realizar el movimiento: quitar de la celda actual y agregar a la destino
@@ -748,5 +905,15 @@ public class Laberinto {
     public void removeEntidadGlobal(Entidad e) {
         if (e == null) return;
         entidades.removeElement(e);
+    }
+
+    /**
+     * Return a snapshot of the global entities currently present in the maze.
+     * This is used by the persistence layer to serialize exact entity state/positions.
+     */
+    public Entidad[] getEntidadesSnapshot() {
+        synchronized (entidades) {
+            return entidades.toArray(new Entidad[0]);
+        }
     }
 }

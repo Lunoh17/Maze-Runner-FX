@@ -66,7 +66,15 @@ public class EleccionLaberintoController {
         int x, y;
         do { x = randomBetween(minX, maxX); y = randomBetween(minY, maxY); } while (x == y);
 
-        Laberinto lab = new Laberinto(x, y);
+        // determine explosive wall count per difficulty
+        int explosiveCount = switch (nivel) {
+            case "Fácil" -> 5;
+            case "Intermedio" -> 15;
+            case "Difícil" -> 20;
+            case "Avanzado" -> 25;
+            default -> -1;
+        };
+        Laberinto lab = new Laberinto(x, y, explosiveCount);
         String correo = (usuarioCorreo != null && !usuarioCorreo.isEmpty()) ? usuarioCorreo : "player@example.com";
         String password = getPasswordForEmail(correo);
         Jugador jugador = new Jugador(correo, password);
