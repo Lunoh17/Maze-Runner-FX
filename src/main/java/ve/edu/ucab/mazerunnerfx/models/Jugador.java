@@ -102,6 +102,29 @@ public class Jugador extends Entidad implements Movimiento {
     }
 
     /**
+     * Devuelve un arreglo con los valores de las vidas en el orden en que se almacenan.
+     * Esto se usa para persistir/restaurar el estado de vida del jugador.
+     * @return arreglo int[] con cada vida (valores de tipo short promovidos a int)
+     */
+    public int[] getVidasArray() {
+        synchronized (vidas) {
+            int[] arr = new int[vidas.size()];
+            for (int i = 0; i < vidas.size(); i++) {
+                arr[i] = vidas.get(i);
+            }
+            return arr;
+        }
+    }
+
+    /**
+     * Devuelve la cantidad de llaves que posee el jugador.
+     * @return número de llaves
+     */
+    public int getLlaves() {
+        return llaves;
+    }
+
+    /**
      * Indica si el jugador consiguió escapar del laberinto.
      * @return true si escapó
      */
@@ -205,7 +228,7 @@ public class Jugador extends Entidad implements Movimiento {
                 System.out.println("Entrada inválida. Use W/A/S/D para moverse, Q para salir.");
                 continue;
             }
-            movedSuccessfully = laberinto.movimientoEntidad(this, dir);
+            movedSuccessfully = laberinto.movimientoEntidad((Entidad) this, dir);
             if (!movedSuccessfully) {
                 System.out.println("Cannot move in that direction (wall or out of bounds).");
                 // Traducción: No se puede mover en esa dirección (pared o fuera de límites).
@@ -239,5 +262,40 @@ public class Jugador extends Entidad implements Movimiento {
      */
     public int getPuntos() {
         return puntos;
+    }
+
+    /**
+     * Returns how many lives the player currently has.
+     */
+    public int getVidasCount() {
+        return vidas.size();
+    }
+
+    /**
+     * Returns the current life/energy value on top of the lives stack (or 0 if none).
+     */
+    public int getVidaActual() {
+        return vidas.isEmpty() ? 0 : vidas.peek();
+    }
+
+    /**
+     * Returns the maximum life a single life can have.
+     */
+    public int getMaxVida() {
+        return MAX_VIDA;
+    }
+
+    public void recuperarVida(short energiaRecuperada) {
+        if (!vidas.isEmpty()) {
+            short vidaActual = vidas.pop();
+            vidaActual += energiaRecuperada;
+            if (vidaActual > MAX_VIDA) {
+                vidaActual = MAX_VIDA;
+            }
+            vidas.push(vidaActual);
+            System.out.println("Vida recuperada. Vida actual: " + vidaActual + "/" + MAX_VIDA);
+        } else {
+            System.out.println("No tienes vidas para recuperar.");
+        }
     }
 }

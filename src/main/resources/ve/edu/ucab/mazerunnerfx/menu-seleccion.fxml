@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ve.edu.ucab.mazerunnerfx.MenuSeleccionController">
+   <children>
+      <ImageView fitHeight="485.0" fitWidth="677.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../../misc/seleccionIMG.png" />
+         </image>
+      </ImageView>
+      <AnchorPane layoutX="88.0" layoutY="54.0" prefHeight="292.0" prefWidth="502.0">
+         <children>
+            <ImageView fitHeight="292.0" fitWidth="502.0" layoutX="-2.0" opacity="0.67" pickOnBounds="true">
+               <image>
+                  <Image url="@../../../../misc/whiteBlock.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="88.0" layoutY="33.0" text="Bienvenido aventurero">
+               <font>
+                  <Font name="Comic Sans MS Bold" size="30.0" />
+               </font>
+            </Label>
+            <Label layoutX="141.0" layoutY="81.0" text="a Maze Runner">
+               <font>
+                  <Font name="Comic Sans MS Bold" size="30.0" />
+               </font>
+            </Label>
+            <Button fx:id="nuevaPartida" layoutX="80.0" layoutY="170.0" mnemonicParsing="false" onAction="#onNuevaPartida" text="Nueva Partida">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="cargarPartida" layoutX="80.0" layoutY="219.0" mnemonicParsing="false" onAction="#onCargarPartida" text="Cargar Partida">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="estadisticas" layoutX="307.0" layoutY="170.0" mnemonicParsing="false" onAction="#onEstadisticas" text="Estadísticas">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="salir" layoutX="307.0" layoutY="219.0" mnemonicParsing="false" onAction="#onSalir" prefHeight="35.0" prefWidth="103.0" text="Salir">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

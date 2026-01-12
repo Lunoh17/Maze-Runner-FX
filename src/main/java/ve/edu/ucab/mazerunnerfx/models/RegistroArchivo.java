@@ -88,25 +88,8 @@ public abstract class RegistroArchivo {
                 String AuxContraseniaCifrada = partes[1].trim();
                 if(AuxUsuario.equals(usuario)){
                     String AuxContraseniaDescifrada = AESCifrado.Descifrado(AuxContraseniaCifrada);
-                    if(AuxContraseniaDescifrada.equals(contrasenia)){
-                        leer.close();
-                        return true;
-                    }else{
-                        leer.close();
-                        Scanner leeropc = new Scanner(System.in);
-                        System.out.println("Contraseña Incorrecta");
-                        System.out.println("Deseas Recuperar Contraseña");
-                        System.out.println("1. Si");
-                        System.out.println("0. NO");
-                        int opc;
-                        opc = leeropc.nextInt();
-                        if(opc == 1){
-                            System.out.println("Recuperacion de Usuario:Contraseña "+AuxUsuario+":"+AuxContraseniaDescifrada);
-                            return true;
-                        }else{
-                            return false;
-                        }
-                    }
+                    leer.close();
+                    return AuxContraseniaDescifrada.equals(contrasenia);
                 }
             }
             return false;

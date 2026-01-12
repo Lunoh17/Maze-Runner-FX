@@ -1,16 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ve.edu.ucab.mazerunnerfx.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
-
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+<Pane prefHeight="400.0" prefWidth="541.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ve.edu.ucab.mazerunnerfx.HelloController">
+   <children>
+      <ImageView id="pergamino" fitHeight="400.0" fitWidth="532.0" layoutX="5.0" pickOnBounds="true">
+         <image>
+            <Image url="@../../../../misc/pergamino.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="114.0" layoutY="99.0" text="MAZE RUNNER ">
+         <font>
+            <Font name="Comic Sans MS Bold Italic" size="39.0" />
+         </font>
+      </Label>
+      <Button fx:id="registroUsuario" layoutX="114.0" layoutY="216.0" mnemonicParsing="false" onAction="#onRegistroUsuario" text="Registrarse">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <Button fx:id="inicioUsuario" layoutX="341.0" layoutY="216.0" mnemonicParsing="false" onAction="#onInicio" text="Iniciar sesión">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <Button layoutX="178.0" layoutY="270.0" mnemonicParsing="false" text="Recueperar Contraseña">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+   </children>
+</Pane>
