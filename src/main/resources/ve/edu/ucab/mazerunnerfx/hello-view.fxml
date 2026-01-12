@@ -17,12 +17,17 @@
             <Font name="Comic Sans MS Bold Italic" size="39.0" />
          </font>
       </Label>
-      <Button fx:id="registroUsuario" layoutX="137.0" layoutY="233.0" mnemonicParsing="false" onAction="#onRegistroUsuario" text="Registrarse">
+      <Button fx:id="registroUsuario" layoutX="114.0" layoutY="216.0" mnemonicParsing="false" onAction="#onRegistroUsuario" text="Registrarse">
          <font>
             <Font size="16.0" />
          </font>
       </Button>
-      <Button fx:id="inicioUsuario" layoutX="301.0" layoutY="233.0" mnemonicParsing="false" onAction="#onInicio" text="Iniciar sesión">
+      <Button fx:id="inicioUsuario" layoutX="341.0" layoutY="216.0" mnemonicParsing="false" onAction="#onInicio" text="Iniciar sesión">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <Button layoutX="178.0" layoutY="270.0" mnemonicParsing="false" text="Recueperar Contraseña">
          <font>
             <Font size="16.0" />
          </font>
