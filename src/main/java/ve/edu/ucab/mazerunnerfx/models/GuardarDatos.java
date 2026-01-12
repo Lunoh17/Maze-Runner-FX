@@ -1,10 +1,13 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
-import java.io.File;
-
 /**
- * Construye y persiste el formato de registro de usuario en un archivo de texto.
- * Utiliza RegistroArchivo para realizar la escritura en disco.
+ * Encapsula la lógica para guardar y restaurar datos de la partida.
+ *
+ * <p>Construye y persiste el formato de registro de usuario en un archivo de texto
+ * y utiliza RegistroArchivo para realizar la escritura en disco.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class GuardarDatos extends RegistroArchivo{
     private Usuario usuario;

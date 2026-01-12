@@ -1,7 +1,12 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
 /**
- * Utilidades varias para la interfaz de consola.
+ * Utilidades misceláneas usadas en el proyecto.
+ *
+ * <p>Contiene funciones auxiliares generales reutilizables por varias clases.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Misc {
     /**

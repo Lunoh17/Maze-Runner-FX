@@ -20,6 +20,15 @@ import ve.edu.ucab.mazerunnerfx.models.Usuario;
 import ve.edu.ucab.mazerunnerfx.models.Contrasenia;
 import ve.edu.ucab.mazerunnerfx.models.CompararDatos;
 
+/**
+ * Controlador de la vista de registro de usuarios.
+ *
+ * <p>Gestiona la validación de los campos del formulario, la interacción con la UI
+ * y el flujo de registro (validaciones, mensajes y guardado).</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class RegistroUsuarioController {
 
     @FXML
@@ -52,6 +61,14 @@ public class RegistroUsuarioController {
     private boolean confirmTouched = false;
     // --- end added
 
+    /**
+     * Inicializa el controlador: limpia etiquetas de error, deshabilita el botón de registro
+     * y añade listeners para validación en línea y control de foco en los campos.
+     *
+     * <p>Se invoca automáticamente tras cargar el FXML.</p>
+     *
+     * @since 2026-01-12
+     */
     @FXML
     protected void initialize() {
         // Start with empty error labels
@@ -98,6 +115,16 @@ public class RegistroUsuarioController {
         // --- end added
     }
 
+    /**
+     * Actualiza la validación en línea para los campos de registro.
+     *
+     * <p>Comprueba presencia de valores, consistencia entre contraseña y confirmación,
+     * y actualiza los mensajes inline y el estado del botón de registro.</p>
+     *
+     * <p>No persiste datos; sólo actualiza la interfaz según la entrada actual.</p>
+     *
+     * @since 2026-01-12
+     */
     private void updateInlineValidation() {
         String emailText = (email != null ? email.getText().trim() : "");
         String pass = (password != null ? password.getText() : "");
@@ -143,6 +170,15 @@ public class RegistroUsuarioController {
         if (registroButton != null) registroButton.setDisable(!(emailPresent && passPresent && confPresent));
     }
 
+    /**
+     * Maneja el evento de volver al menú principal.
+     *
+     * <p>Carga la vista {@code hello-view.fxml} en la misma ventana.</p>
+     *
+     * @param event evento asociado al botón de regreso
+     * @throws IOException si falla la carga del FXML
+     * @since 2026-01-12
+     */
     @FXML
     protected void onRegreso(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
@@ -152,7 +188,13 @@ public class RegistroUsuarioController {
     }
 
     /**
-     * Validate email, check registration existence and validate passwords.
+     * Maneja el flujo de registro cuando el usuario pulsa el botón de registro.
+     *
+     * <p>Valida el correo, comprueba si ya está registrado, valida las contraseñas y
+     * persiste el usuario si todo es correcto. Muestra alertas en caso de error o éxito.</p>
+     *
+     * @param event evento asociado al botón de registro
+     * @since 2026-01-12
      */
     @FXML
     protected void onRegistro(ActionEvent event) {
@@ -227,6 +269,13 @@ public class RegistroUsuarioController {
         }
     }
 
+    /**
+     * Muestra una alerta modal con el tipo y mensaje especificados.
+     *
+     * @param type  tipo de alerta (ERROR, INFORMATION, etc.)
+     * @param message texto a mostrar en la alerta
+     * @since 2026-01-12
+     */
     private void showAlert(AlertType type, String message) {
         Alert alert = new Alert(type);
         alert.setHeaderText(null);

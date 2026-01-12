@@ -19,6 +19,15 @@ import java.util.Scanner;
 import javafx.stage.Screen;
 import javafx.geometry.Rectangle2D;
 
+/**
+ * Controlador para la pantalla de selección de dificultad del laberinto.
+ *
+ * <p>Permite al usuario escoger entre distintos niveles (Fácil, Intermedio, Difícil)
+ * y prepara la escena de juego con las dimensiones adecuadas.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class EleccionLaberintoController {
 
     private String usuarioCorreo;

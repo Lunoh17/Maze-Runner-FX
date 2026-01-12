@@ -3,6 +3,14 @@ package ve.edu.ucab.mazerunnerfx.models;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Pruebas unitarias para la validación de contraseñas.
+ *
+ * <p>Comprueba que las reglas de contraseñas se apliquen correctamente.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class ContraseniaTest {
 
     @Test
@@ -23,4 +31,3 @@ public class ContraseniaTest {
         assertFalse(c.PassValidacion("abcdef", "abcdef"));
     }
 }
-

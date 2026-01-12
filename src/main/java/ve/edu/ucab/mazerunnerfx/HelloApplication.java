@@ -7,6 +7,14 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Punto de entrada JavaFX de la aplicación.
+ *
+ * <p>Inicia la aplicación y carga la vista principal.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {

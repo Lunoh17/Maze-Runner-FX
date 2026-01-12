@@ -3,6 +3,11 @@ package ve.edu.ucab.mazerunnerfx.models;
 /**
  * Entidad de peligro que causa daño al jugador al entrar en su celda.
  * Representada por el carácter 'T'.
+ *
+ * <p>Una trampa puede afectar al jugador al activarse (daño, efectos u otros comportamientos).</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Trampa extends Entidad {
     short danio = 1;

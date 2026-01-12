@@ -19,8 +19,13 @@ import ve.edu.ucab.mazerunnerfx.models.ControladorBD;
 import java.util.Set;
 
 /**
- * Controller for laberinto.fxml: renders the maze on a Canvas using model accessors.
- * Handles WASD input for the player and moves enemies after each player move.
+ * Controlador de la vista del laberinto.
+ *
+ * <p>Renderiza el laberinto en un Canvas, maneja entrada de teclas (WASD/Q)
+ * y sincroniza los estados del modelo (`Laberinto`) con la interfaz gráfica.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class LaberintoController {
 

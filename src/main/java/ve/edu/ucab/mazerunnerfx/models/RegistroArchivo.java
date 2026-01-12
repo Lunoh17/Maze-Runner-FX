@@ -8,10 +8,14 @@ import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 /**
- * Abstracción de acceso a archivo de registro de usuarios.
- * Ofrece utilidades para guardar, buscar y validar credenciales almacenadas.
+ * Gestiona la lectura y escritura de registros en archivos (por ejemplo, Registro-Login.txt).
+ *
+ * <p>Ofrece utilidades para persistir y recuperar información simple de usuarios/entradas.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
-public abstract class RegistroArchivo {
+public class RegistroArchivo {
     private static final String nombreArchivo = "Registro-Login.txt";
 
     /**

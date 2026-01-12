@@ -3,6 +3,11 @@ package ve.edu.ucab.mazerunnerfx.models;
 /**
  * Entidad coleccionable requerida para abrir la puerta de salida.
  * Se representa con el carácter 'K' y aumenta el contador de llaves del jugador.
+ *
+ * <p>Objeto recogible por el jugador que interactúa con instancias de Puerta.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Llave extends Entidad {
     /**

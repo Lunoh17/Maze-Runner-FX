@@ -14,6 +14,15 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Screen;
 import ve.edu.ucab.mazerunnerfx.models.Laberinto;
 
+/**
+ * Controlador del menú de selección de la aplicación.
+ *
+ * <p>Gestiona la navegación desde el menú principal hacia las pantallas de
+ * selección de laberinto, estadísticas y carga/guardado de partidas.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class MenuSeleccionController {
 
     @FXML

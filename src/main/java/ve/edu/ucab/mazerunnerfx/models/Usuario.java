@@ -3,6 +3,9 @@ package ve.edu.ucab.mazerunnerfx.models;
 /**
  * Representa un usuario del sistema identificado por su correo electrónico.
  * Ofrece validación básica del formato de correo.
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Usuario{
     private String correo;

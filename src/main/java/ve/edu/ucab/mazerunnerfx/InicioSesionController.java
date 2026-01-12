@@ -20,6 +20,15 @@ import ve.edu.ucab.mazerunnerfx.models.Usuario;
 import ve.edu.ucab.mazerunnerfx.models.Contrasenia;
 import ve.edu.ucab.mazerunnerfx.models.CompararDatos;
 
+/**
+ * Controlador de la pantalla de inicio de sesión.
+ *
+ * <p>Valida campos, muestra mensajes de error en línea y navega a la vista del laberinto
+ * cuando las credenciales son correctas.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class InicioSesionController {
 
     @FXML
@@ -40,6 +49,14 @@ public class InicioSesionController {
 
     private boolean passwordTouched = false;
 
+    /**
+     * Inicializa el controlador: limpia etiquetas de error, deshabilita el botón de inicio
+     * y añade listeners para validación en línea sobre los campos de correo y contraseña.
+     *
+     * <p>Se llama automáticamente tras cargar el FXML.</p>
+     *
+     * @since 2026-01-12
+     */
     @FXML
     protected void initialize() {
         if (emailError != null) emailError.setText("");
@@ -64,6 +81,18 @@ public class InicioSesionController {
         }
     }
 
+    /**
+     * Actualiza la validación en línea de los campos de correo y contraseña.
+     *
+     * <p>Valida presencia y formato del correo, comprueba si el correo está registrado
+     * y muestra mensajes de error junto a los campos. También controla el estado del
+     * botón de inicio de sesión (habilitado/deshabilitado) según las comprobaciones básicas.</p>
+     *
+     * <p>Este método no realiza cambios en el modelo de usuario persistente, sólo actualiza
+     * la interfaz y prepara el estado para una posible autenticación.</p>
+     *
+     * @since 2026-01-12
+     */
     private void updateInlineValidation() {
         String emailText = (email != null ? email.getText().trim() : "");
         String pass = (password != null ? password.getText() : "");
@@ -101,6 +130,15 @@ public class InicioSesionController {
         if (inicioSesionMaze != null) inicioSesionMaze.setDisable(!canEnable);
     }
 
+    /**
+     * Maneja el evento de volver al menú principal.
+     *
+     * <p>Carga la vista {@code hello-view.fxml} y la muestra en la misma ventana.</p>
+     *
+     * @param event evento generado por la interacción del usuario (presionar el botón de regreso)
+     * @throws IOException si no se puede cargar la vista FXML
+     * @since 2026-01-12
+     */
     @FXML
     protected void onRegresoBoton(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
@@ -109,6 +147,16 @@ public class InicioSesionController {
         stage.show();
     }
 
+    /**
+     * Maneja el intento de inicio de sesión cuando el usuario pulsa el botón correspondiente.
+     *
+     * <p>Realiza validaciones finales del correo y la contraseña, muestra alertas en caso de
+     * error y, si las credenciales son correctas, navega a {@code menu-seleccion.fxml} pasando
+     * el correo normalizado al controlador siguiente.</p>
+     *
+     * @param event evento asociado al botón de inicio de sesión
+     * @since 2026-01-12
+     */
     @FXML
     public void onInicioSesionMaze(ActionEvent event) {
         // final validation before allowing login
@@ -170,6 +218,13 @@ public class InicioSesionController {
         }
     }
 
+    /**
+     * Muestra una alerta modal con el tipo y mensaje especificados.
+     *
+     * @param type  tipo de alerta (ERROR, INFORMATION, etc.)
+     * @param message texto a mostrar en la alerta
+     * @since 2026-01-12
+     */
     private void showAlert(AlertType type, String message) {
         Alert alert = new Alert(type);
         alert.setHeaderText(null);

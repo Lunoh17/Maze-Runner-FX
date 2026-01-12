@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 /**
  * Representa el laberinto, su generación, visualización y lógica de juego.
  * Administra celdas, entidades y carga/guardado desde archivos JSON.
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Laberinto {
     // Allow larger mazes so difficulty ranges up to 75x75 are valid

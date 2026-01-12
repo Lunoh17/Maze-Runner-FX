@@ -1,8 +1,13 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
 /**
- * Entidad de salida del laberinto; requiere una llave para activar la victoria.
- * Representada por el carácter 'X'.
+ * Representa una puerta dentro del laberinto.
+ *
+ * <p>Puede actuar como salida o como elemento que cambia su estado de abierto/cerrado.
+ * Requiere una llave para activar la victoria. Representada por el carácter 'X'.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Puerta extends Entidad {
     /**

@@ -1,8 +1,12 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
 /**
- * Clase base abstracta para todas las entidades dentro del laberinto.
- * Define posición, representación ASCII e interacción con el jugador.
+ * Clase base para todas las entidades que pueden existir en una celda del laberinto.
+ *
+ * <p>Sirve como superclase para Jugador, Enemigo, Cristal, Trampa, entre otros.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public abstract class Entidad implements Comparable<Entidad> {
     protected char ascii;

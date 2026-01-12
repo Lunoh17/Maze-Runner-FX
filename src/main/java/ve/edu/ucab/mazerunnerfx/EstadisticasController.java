@@ -19,6 +19,15 @@ import ve.edu.ucab.mazerunnerfx.models.Statistics.GameRecord;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Controlador para la vista de estadísticas.
+ *
+ * <p>Muestra el historial de partidas del jugador y permite navegar de regreso
+ * al menú principal.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class EstadisticasController {
 
     @FXML

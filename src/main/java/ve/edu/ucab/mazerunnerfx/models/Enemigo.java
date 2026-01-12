@@ -1,6 +1,15 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
 /**
+ * Representa un enemigo dentro del laberinto con comportamiento hostil.
+ *
+ * <p>Incluye lógica de movimiento y colisión propia de enemigos.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
+
+/**
  * Entidad hostil que se mueve por el laberinto y causa daño al jugador.
  * Implementa comportamiento de Movimiento aleatorio.
  */

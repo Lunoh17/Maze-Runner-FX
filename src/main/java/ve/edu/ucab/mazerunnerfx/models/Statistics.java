@@ -25,9 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Maneja el registro y la persistencia de estadísticas de jugadores.
- * Guarda y muestra partidas ganadas/perdidas, total de partidas y puntaje máximo,
- * además de un historial de partidas (tiempo y puntaje) por jugador.
+ * Clase para manejar estadísticas de juego y del jugador.
+ *
+ * <p>Proporciona métodos para registrar y recuperar métricas relevantes de las partidas.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Statistics {
     private static final String STATS_FILE_NAME = "stats.json";
@@ -50,16 +53,49 @@ public class Statistics {
             this.result = result;
         }
 
+        /**
+         * Devuelve la marca de tiempo en milisegundos de la partida.
+         * @return timestamp en milisegundos
+         * @since 2026-01-12
+         */
         public long getTimestampMillis() { return timestampMillis; }
+
+        /**
+         * Devuelve la duración de la partida en segundos.
+         * @return duración en segundos
+         * @since 2026-01-12
+         */
         public long getDurationSeconds() { return durationSeconds; }
+
+        /**
+         * Devuelve el puntaje obtenido en la partida.
+         * @return puntaje (score)
+         * @since 2026-01-12
+         */
         public int getScore() { return score; }
+
+        /**
+         * Devuelve el resultado de la partida (por ejemplo "WIN" o "LOSS").
+         * @return resultado como cadena
+         * @since 2026-01-12
+         */
         public String getResult() { return result; }
 
+        /**
+         * Obtiene la fecha formateada a partir del timestamp.
+         * @return fecha legible en formato yyyy-MM-dd HH:mm:ss
+         * @since 2026-01-12
+         */
         public String getFormattedDate() {
             Date d = new Date(timestampMillis);
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d);
         }
 
+        /**
+         * Devuelve la duración en formato mm:ss.
+         * @return duración formateada como cadena
+         * @since 2026-01-12
+         */
         public String getFormattedDuration() {
             long mins = durationSeconds / 60;
             long secs = durationSeconds % 60;
@@ -81,6 +117,8 @@ public class Statistics {
 
         /**
          * Recalcula el total de partidas jugadas a partir de ganadas y perdidas.
+         *
+         * @since 2026-01-12
          */
         public void recompute() {
             this.games = this.wins + this.losses;
@@ -93,17 +131,30 @@ public class Statistics {
     /**
      * Devuelve el mapa de estadísticas por jugador.
      * @return mapa email -> PlayerStats
+     * @since 2026-01-12
      */
     public Map<String, PlayerStats> getPlayers() {
         return players;
     }
 
+    /**
+     * Obtiene el archivo de estadísticas dentro del directorio `saves` del proyecto.
+     *
+     * @return referencia al archivo de estadísticas
+     * @since 2026-01-12
+     */
     private static File statsFile() {
         String projectRoot = System.getProperty("user.dir");
         File saveDir = new File(projectRoot, "saves");
         return new File(saveDir, STATS_FILE_NAME);
     }
 
+    /**
+     * Carga las estadísticas persistidas desde disco o crea una instancia vacía si no existe el archivo.
+     *
+     * @return instancia de {@link Statistics} con los datos cargados
+     * @since 2026-01-12
+     */
     private static synchronized Statistics load() {
         File f = statsFile();
         if (!f.exists()) {
@@ -127,6 +178,12 @@ public class Statistics {
         }
     }
 
+    /**
+     * Persiste las estadísticas en disco (archivo JSON en `saves/stats.json`).
+     *
+     * @param s instancia de estadísticas a guardar
+     * @since 2026-01-12
+     */
     private static synchronized void save(Statistics s) {
         File f = statsFile();
         File parent = f.getParentFile();
@@ -144,6 +201,14 @@ public class Statistics {
         }
     }
 
+    /**
+     * Obtiene o crea las estadísticas de un jugador dentro de la instancia dada.
+     *
+     * @param s instancia de {@link Statistics} donde buscar/crear
+     * @param email identificador del jugador
+     * @return objeto {@link PlayerStats} existente o recién creado
+     * @since 2026-01-12
+     */
     private static PlayerStats getOrCreate(Statistics s, String email) {
         if (email == null || email.isEmpty()) email = "default";
         return s.players.computeIfAbsent(email, k -> new PlayerStats());
@@ -187,6 +252,7 @@ public class Statistics {
      * @param email identificador del jugador
      * @param score puntaje alcanzado
      * @param durationSeconds duración de la partida en segundos
+     * @since 2026-01-12
      */
     public static void recordQuit(String email, int score, long durationSeconds) {
         // Actualmente, no alteramos ganadas/perdidas/partidas por una salida.
@@ -201,6 +267,7 @@ public class Statistics {
      * Devuelve el historial de partidas para un usuario dado (orden original: más antiguo -> más reciente).
      * @param email correo del usuario
      * @return lista de GameRecord (vacía si no hay datos)
+     * @since 2026-01-12
      */
     public static List<GameRecord> getRecordsForUser(String email) {
         Statistics s = load();
@@ -211,6 +278,8 @@ public class Statistics {
 
     /**
      * Imprime en consola el resumen de estadísticas de todos los jugadores conocidos.
+     *
+     * @since 2026-01-12
      */
     public static void printAll() {
         // Cargar estadísticas persistidas
@@ -242,6 +311,13 @@ public class Statistics {
         System.out.println("=============================================================");
     }
 
+    /**
+     * Busca en la carpeta de saves archivos tipo "laberinto-*.json" y extrae datos básicos
+     * para enriquecer las estadísticas mostradas (no persiste cambios en disco).
+     *
+     * @param into mapa donde sembrar la información
+     * @since 2026-01-12
+     */
     private static void seedFromSaves(Map<String, PlayerStats> into) {
         String projectRoot = System.getProperty("user.dir");
         File saveDir = new File(projectRoot, "saves");

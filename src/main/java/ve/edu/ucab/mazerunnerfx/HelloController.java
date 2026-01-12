@@ -9,6 +9,14 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
 
+/**
+ * Controlador principal de la vista de inicio (pantalla de bienvenida).
+ *
+ * <p>Proporciona acciones para navegar a las pantallas de registro e inicio de sesión.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
+ */
 public class HelloController {
 
     @FXML
@@ -27,4 +35,3 @@ public class HelloController {
         stage.show();
     }
 }
-

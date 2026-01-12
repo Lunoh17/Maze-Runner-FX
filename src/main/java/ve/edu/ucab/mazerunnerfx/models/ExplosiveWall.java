@@ -1,9 +1,13 @@
 package ve.edu.ucab.mazerunnerfx.models;
 
 /**
- * Explosive wall entity: represented by 'B'. When the player enters the cell containing
- * this entity it "explodes" and deals 3 points of damage to the player.
- * The controller removes the entity from the cell/global list after interaction.
+ * Representa una pared explosiva que puede ser destruida por el jugador.
+ *
+ * <p>Al detonar, puede alterar celdas adyacentes y cambiar la configuración del laberinto.
+ * Representada por 'B'. Cuando el jugador entra en la celda explota y causa daño.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class ExplosiveWall extends Entidad {
     private static final short DAMAGE = 3;
@@ -21,4 +25,3 @@ public class ExplosiveWall extends Entidad {
         // after interact is called. We don't access the laberinto reference here.
     }
 }
-

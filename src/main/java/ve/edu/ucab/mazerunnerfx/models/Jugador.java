@@ -8,8 +8,12 @@ import java.util.Scanner;
 import java.util.Stack;
 
 /**
- * Representa al jugador dentro del laberinto, con vidas, puntos y llaves.
- * Implementa el control de movimiento y la interacción con otras entidades.
+ * Modelo que representa al jugador en el juego.
+ *
+ * <p>Almacena estado del jugador, posición, y métodos para interacción con el laberinto.</p>
+ *
+ * @author Equipo
+ * @version 2026-01-12
  */
 public class Jugador extends Entidad implements Movimiento {
     final static short MAX_VIDA = 10;
