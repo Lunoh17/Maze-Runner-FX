@@ -1,0 +1,16 @@
+{
+  "oriana@gmail.com": {
+    "wins": 1,
+    "losses": 0,
+    "games": 1,
+    "highestScore": 550,
+    "records": [
+      {
+        "timestampMillis": 1768185536103,
+        "durationSeconds": 81,
+        "score": 550,
+        "result": "WIN"
+      }
+    ]
+  }
+}
